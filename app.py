@@ -12,9 +12,9 @@ from src.dashboard_ui import DashboardUI
 st.set_page_config(page_title="HR Data Dashboard", layout="wide")
 
 def load_data():
-    raw_data_path = "data/raw_hr_data.csv"
+    raw_data_path = "data/raw/raw_hr_data.csv"
     if not os.path.exists(raw_data_path):
-        st.error(f"Data file not found at {raw_data_path}. Please run the generator script first.")
+        st.error(f"データファイルが {raw_data_path} に見つかりません。")
         return None
     return pd.read_csv(raw_data_path)
 
