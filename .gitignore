@@ -1,0 +1,18 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Data
+data/*.csv
+!data/sample_template.csv
+
+# Reports
+reports/*.pdf
+
+# IDEs
+.vscode/
+.idea/
+.DS_Store
