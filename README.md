@@ -40,6 +40,7 @@ graph TD
 | :--- | :--- |
 | [第0章 学習ロードマップ & トレーニングプログラム](docs/00_hr_data_analyst_training_program.md) | 実務未経験からプロを目指す、24週・9ステージのハンズオン型プログラム（5人の専門家エージェントによる議論を経て設計） |
 | [第1章 実務の全体フロー](docs/01_hr_data_reconciliation_workflow.md) | プロの人事データアナリストの視点で、定義→入手→プロファイリング→クレンジング→突合→差異分析→是正→仕組み化 の8フェーズを解説 |
+| [第2章 トレーニングの進め方](docs/02_how_to_train.md) | 合成データ生成器（`tools/generate_ab_sample_data.py`）と自己採点ツール（`tools/score_recon.py`）を使った、毎日・毎週の具体的な練習方法 |
 
 ---
 

@@ -585,7 +585,7 @@ graph LR
 | 章 | テーマ | 対応Phase | 主な成果物（予定） |
 | :--- | :--- | :--- | :--- |
 | **第1章** | **実務の全体フロー（本書）** | 全体 | `docs/01_hr_data_reconciliation_workflow.md` |
-| 第2章 | 合成データ生成：A・B 2システム分のリアルな"汚い"データを作る | 1 | `tools/generate_ab_sample_data.py` |
+| **第2章** | **トレーニングの進め方：A・B 2システム分の"汚い"合成データ生成と自己採点** | 1〜6 | `docs/02_how_to_train.md`, `tools/generate_ab_sample_data.py`, `tools/score_recon.py` |
 | 第3章 | 受領チェックとプロファイリング | 1・2 | `src/recon/intake.py`, `src/recon/profiling.py` |
 | 第4章 | 日本の人事データ向けクレンジングエンジン | 3 | `src/recon/normalize.py`, `config/mapping_*.csv` |
 | 第5章 | 段階的キーマッチングと差異検出 | 4 | `src/recon/matcher.py` |
