@@ -42,6 +42,7 @@ graph TD
 | [第1章 実務の全体フロー](docs/01_hr_data_reconciliation_workflow.md) | プロの人事データアナリストの視点で、定義→入手→プロファイリング→クレンジング→突合→差異分析→是正→仕組み化 の8フェーズを解説 |
 | [第2章 トレーニングの進め方](docs/02_how_to_train.md) | 合成データ生成器（`tools/generate_ab_sample_data.py`）と自己採点ツール（`tools/score_recon.py`）を使った、毎日・毎週の具体的な練習方法 |
 | [第3章 スマホで鍛える](docs/03_mobile_training.md) | スマホ用の判断ドリル（`mobile/hr_judgment_drill.html`、全130問）と、PC・スプレッドシートでの練習との組み合わせ方 |
+| [第4章 スプレッドシート数式ガイド](docs/04_spreadsheet_formula_guide.md) | XLOOKUP と COUNTIF しか知らない人向けに、練習用ブックで使う数式の構文を1列ずつ解説（全数式を表計算ソフトで計算して検証済み） |
 
 ---
 

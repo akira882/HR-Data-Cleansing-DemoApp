@@ -105,11 +105,15 @@ python tools/generate_ab_sample_data.py --level 1 --seed 42 --xlsx
 
 | シート | 中身 |
 |---|---|
-| `README` | 進め方と数式の例 |
+| `README` | 進め方 |
+| `関数ドリル` | 使う関数を1つずつ練習する18問。G列に数式を書くと、H列に ○ か × が出る |
+| `手順` | A_work・B_work の列ごとの目的・数式・構文の読み方・注意と、提出シートの作り方 |
 | `A_raw` / `B_raw` / `org_raw` | 受領データ。全セルが文字列で、シート保護がかかっている（原本は書き換えない） |
 | `A_work` / `B_work` | 原本の写し＋黄色の作業列 |
 | `map_dept` / `map_type` | 変換表（自分で作る） |
 | `matches` / `diffs` | 提出用。`item`・`cause` はプルダウンで選ぶ |
+
+数式の構文の読み方は [第4章 スプレッドシート数式ガイド](04_spreadsheet_formula_guide.md) で、1列ずつ解説しています。
 
 採点はブックのまま行えます。
 ```bash
