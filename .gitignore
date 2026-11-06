@@ -16,3 +16,8 @@ reports/*.pdf
 .vscode/
 .idea/
 .DS_Store
+
+# Training data (generated; answer key must stay out of Git)
+data/ab/
+data/answer_key/
+learning/output/

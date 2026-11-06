@@ -1,0 +1,496 @@
+<title>人事データ判断ドリル</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Shippori+Mincho+B1:wght@700&family=Zen+Kaku+Gothic+New:wght@400;500;700&family=M+PLUS+1+Code:wght@400;500&display=swap">
+<style>
+/* Layout: 1カラムの帳票。記録は罫線付きの票、判定結果は朱肉の印で示す */
+:root {
+  --paper: #f5f6f8;
+  --sheet: #ffffff;
+  --ink: #1d2433;
+  --ink-soft: #586176;
+  --rule: #d5d9e2;
+  --rule-strong: #9aa3b5;
+  --navy: #24406e;
+  --navy-wash: #e7ecf5;
+  --shu: #c8372d;
+  --shu-wash: #fbeceb;
+  --ok: #1f7a4d;
+  --ok-wash: #e5f3ec;
+  --warn: #9a6a00;
+  --font-display: "Shippori Mincho B1", "Hiragino Mincho ProN", "Yu Mincho", serif;
+  --font-body: "Zen Kaku Gothic New", "Hiragino Sans", "Yu Gothic", "Noto Sans JP", system-ui, sans-serif;
+  --font-data: "M PLUS 1 Code", "BIZ UDGothic", ui-monospace, "SFMono-Regular", monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #12151c; --sheet: #1a1f29; --ink: #e6e9f0; --ink-soft: #a1a9ba; --rule: #2d3442; --rule-strong: #4a5367;
+    --navy: #8fb0e6; --navy-wash: #1f2a3e; --shu: #ef6a5e; --shu-wash: #3a1f1d; --ok: #5cc794; --ok-wash: #173326;
+    --warn: #e0b34d; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #12151c; --sheet: #1a1f29; --ink: #e6e9f0; --ink-soft: #a1a9ba; --rule: #2d3442; --rule-strong: #4a5367;
+  --navy: #8fb0e6; --navy-wash: #1f2a3e; --shu: #ef6a5e; --shu-wash: #3a1f1d; --ok: #5cc794; --ok-wash: #173326;
+  --warn: #e0b34d; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background: var(--paper); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.7;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 0 48px;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--paper); }
+.wrap { max-width: 640px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+header.bar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: var(--paper);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-block: 12px 10px;
+  border-bottom: 1px solid var(--rule);
+}
+.brand { font-family: var(--font-display); font-size: 15px; letter-spacing: .02em; margin: 0; white-space: nowrap; }
+nav.tabs { display: flex; gap: 2px; flex-wrap: nowrap; }
+nav.tabs a {
+  font-size: 12.5px; color: var(--ink-soft); text-decoration: none; padding: 4px 6px; border-radius: 4px; white-space: nowrap;
+}
+nav.tabs a[aria-current="page"] { color: var(--navy); background: var(--navy-wash); font-weight: 700; }
+nav.tabs a:focus-visible, button:focus-visible { outline: 2px solid var(--navy); outline-offset: 2px; }
+h1, h2, h3 { text-wrap: balance; margin: 0; }
+h2 { font-family: var(--font-display); font-size: 20px; letter-spacing: .03em; }
+h3 { font-size: 14px; letter-spacing: .06em; color: var(--ink-soft); font-weight: 700; }
+p { margin: 0; }
+.muted { color: var(--ink-soft); font-size: 13px; }
+.view { display: flex; flex-direction: column; gap: 16px; padding-top: 4px; }
+
+/* ホーム */
+.today { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 18px; display: flex; flex-direction: column; gap: 14px; }
+.today .lead { font-size: 14px; }
+.stats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.stat { border-top: 2px solid var(--ink); padding-top: 6px; min-width: 0; }
+.stat b { display: block; font-family: var(--font-data); font-size: 22px; font-variant-numeric: tabular-nums; line-height: 1.3; }
+.stat span { font-size: 11.5px; color: var(--ink-soft); letter-spacing: .04em; }
+.btn {
+  appearance: none; border: 1px solid var(--navy); background: var(--navy); color: var(--sheet);
+  font: 700 15px/1.4 var(--font-body); padding: 13px 16px; border-radius: 6px; cursor: pointer; width: 100%;
+}
+.btn.ghost { background: transparent; color: var(--navy); }
+.btn:disabled { opacity: .45; cursor: default; }
+.row { display: flex; gap: 8px; }
+.row > * { flex: 1 1 0; min-width: 0; }
+.kinds { display: flex; flex-direction: column; gap: 6px; }
+.kind-row { display: grid; grid-template-columns: 7.5em 1fr 4.5em; align-items: center; gap: 10px; font-size: 13px; }
+.meter { height: 6px; background: var(--rule); border-radius: 3px; overflow: hidden; }
+.meter i { display: block; height: 100%; background: var(--navy); }
+.kind-row .pct { text-align: right; font-family: var(--font-data); font-variant-numeric: tabular-nums; color: var(--ink-soft); }
+.callout { border-left: 3px solid var(--shu); background: var(--shu-wash); padding: 10px 12px; font-size: 13.5px; border-radius: 0 4px 4px 0; }
+
+/* 問題 */
+.progress { display: flex; gap: 4px; }
+.progress span { flex: 1; height: 4px; background: var(--rule); border-radius: 2px; }
+.progress span.done { background: var(--ink-soft); }
+.progress span.now { background: var(--navy); }
+.qhead { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; }
+.chip { font-size: 11.5px; letter-spacing: .08em; font-weight: 700; color: var(--navy); border: 1px solid var(--navy); padding: 1px 8px; border-radius: 3px; white-space: nowrap; }
+.qtext { font-size: 16px; font-weight: 500; }
+.slip { background: var(--sheet); border: 1px solid var(--rule-strong); border-radius: 4px; overflow: hidden; }
+.slip-title { display: flex; justify-content: space-between; gap: 8px; font-size: 12px; letter-spacing: .06em; padding: 6px 10px; background: var(--navy-wash); color: var(--navy); font-weight: 700; border-bottom: 1px solid var(--rule-strong); }
+.slip dl { margin: 0; display: grid; grid-template-columns: 6.2em minmax(0, 1fr); }
+.slip dt, .slip dd { margin: 0; padding: 6px 10px; border-bottom: 1px solid var(--rule); font-size: 13px; }
+.slip dt { color: var(--ink-soft); border-right: 1px solid var(--rule); }
+.slip dd { font-family: var(--font-data); overflow-wrap: anywhere; }
+.slip dl > :nth-last-child(-n+2) { border-bottom: 0; }
+.cmp-wrap { overflow-x: auto; background: var(--sheet); border: 1px solid var(--rule-strong); border-radius: 4px; }
+table.cmp { border-collapse: collapse; width: 100%; font-size: 12.5px; }
+table.cmp th, table.cmp td { border-bottom: 1px solid var(--rule); padding: 7px 8px; text-align: left; vertical-align: top; }
+table.cmp thead th { background: var(--navy-wash); color: var(--navy); font-size: 11.5px; letter-spacing: .06em; border-bottom: 1px solid var(--rule-strong); }
+table.cmp td { font-family: var(--font-data); overflow-wrap: anywhere; }
+table.cmp th[scope="row"] { color: var(--ink-soft); font-weight: 500; white-space: nowrap; }
+table.cmp tr.hit td, table.cmp tr.hit th { background: var(--shu-wash); }
+table.cmp tr:last-child th, table.cmp tr:last-child td { border-bottom: 0; }
+.cands { display: flex; flex-direction: column; gap: 10px; }
+.opts { display: flex; flex-direction: column; gap: 8px; }
+.opt {
+  appearance: none; text-align: left; border: 1px solid var(--rule-strong); background: var(--sheet); color: var(--ink);
+  font: 500 14.5px/1.55 var(--font-body); padding: 12px 14px; border-radius: 6px; cursor: pointer; display: flex; gap: 10px; align-items: flex-start;
+}
+.opt .box { flex: 0 0 18px; height: 18px; margin-top: 2px; border: 1.5px solid var(--rule-strong); border-radius: 3px; }
+.opt.single .box { border-radius: 50%; }
+.opt[aria-pressed="true"] { border-color: var(--navy); background: var(--navy-wash); }
+.opt[aria-pressed="true"] .box { background: var(--navy); border-color: var(--navy); }
+.opt.correct { border-color: var(--ok); background: var(--ok-wash); }
+.opt.wrong { border-color: var(--shu); background: var(--shu-wash); }
+.opt:disabled { cursor: default; }
+.conf { display: flex; flex-direction: column; gap: 6px; }
+.verdict { position: relative; background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+.stamp {
+  position: absolute; top: 12px; right: 12px; width: 74px; height: 74px; border-radius: 50%;
+  border: 3px solid var(--shu); color: var(--shu); display: grid; place-items: center; font-family: var(--font-display);
+  font-size: 17px; line-height: 1.05; text-align: center; transform: rotate(-12deg); opacity: .9;
+}
+.stamp.pop { animation: press .28s ease-out both; }
+@keyframes press { from { transform: rotate(-12deg) scale(1.6); opacity: 0; } to { transform: rotate(-12deg) scale(1); opacity: .9; } }
+@media (prefers-reduced-motion: reduce) { .stamp.pop { animation: none; } }
+.verdict h3 { color: var(--ink); font-size: 16px; letter-spacing: .02em; padding-right: 86px; }
+.verdict .answer { font-size: 13.5px; padding-right: 86px; }
+.pr { font-size: 13px; border-top: 1px dashed var(--rule-strong); padding-top: 10px; }
+.pr b { color: var(--navy); }
+.warn { color: var(--warn); font-weight: 700; }
+
+/* 仕様・原則・記録 */
+.doc { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 16px; display: flex; flex-direction: column; gap: 12px; }
+.doc ul { margin: 0; padding-left: 1.2em; display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.doc .tbl { overflow-x: auto; }
+.doc table { border-collapse: collapse; width: 100%; font-size: 13px; }
+.doc th, .doc td { border-bottom: 1px solid var(--rule); padding: 6px 8px; text-align: left; vertical-align: top; }
+.doc th { color: var(--ink-soft); font-weight: 500; white-space: nowrap; }
+.plist { display: flex; flex-direction: column; gap: 10px; }
+.pitem { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 12px 14px; display: grid; grid-template-columns: 2.4em 1fr; gap: 8px; }
+.pitem .no { font-family: var(--font-data); color: var(--navy); font-weight: 500; }
+.pitem p { font-size: 13.5px; color: var(--ink-soft); }
+.pitem .acc { font-size: 12px; font-family: var(--font-data); color: var(--ink-soft); }
+.log-item { background: var(--sheet); border: 1px solid var(--rule); border-radius: 6px; padding: 10px 12px; font-size: 13.5px; display: flex; flex-direction: column; gap: 4px; }
+.log-item .meta { font-size: 11.5px; color: var(--ink-soft); font-family: var(--font-data); }
+textarea { width: 100%; min-height: 140px; font: 12px/1.5 var(--font-data); background: var(--sheet); color: var(--ink); border: 1px solid var(--rule-strong); border-radius: 4px; padding: 8px; }
+.toast { font-size: 13px; color: var(--ok); min-height: 1.4em; }
+</style>
+
+<div class="wrap">
+  <header class="bar">
+    <p class="brand">人事データ判断ドリル</p>
+    <nav class="tabs" aria-label="表示切替">
+      <a href="#home">今日</a><a href="#spec">仕様書</a><a href="#principles">原則</a><a href="#log">記録</a>
+    </nav>
+  </header>
+
+  <section class="view" id="v-home" aria-labelledby="h-home">
+    <div class="today">
+      <h2 id="h-home">今日の10問</h2>
+      <p class="lead">基準日 2026年10月31日。Aシステム（人事給与）を正として、Bシステム（勤怠・ID管理）のデータを判定します。1問30秒、全部で約5分です。</p>
+      <div class="stats">
+        <div class="stat"><b id="s-streak">0</b><span>連続日数</span></div>
+        <div class="stat"><b id="s-acc">—</b><span>直近50問の正答率</span></div>
+        <div class="stat"><b id="s-due">0</b><span>復習待ち</span></div>
+      </div>
+      <div class="row">
+        <button class="btn" id="start10" type="button">10問はじめる</button>
+        <button class="btn ghost" id="start3" type="button">3問だけ</button>
+      </div>
+    </div>
+    <div class="today">
+      <h3>問題の種類ごとの正答率</h3>
+      <div class="kinds" id="kinds"></div>
+      <div class="callout" id="calib">「自信あり」で間違えた判断が、実務で一番危ない判断です。件数がここに出ます。</div>
+    </div>
+  </section>
+
+  <section class="view" id="v-drill" hidden aria-live="polite">
+    <div class="progress" id="progress"></div>
+    <div class="qhead"><span class="chip" id="q-kind">名寄せ</span><span class="muted" id="q-count">1 / 10</span></div>
+    <p class="qtext" id="q-text"></p>
+    <div id="q-body" class="cands"></div>
+    <div class="opts" id="q-opts"></div>
+    <div class="conf" id="q-conf">
+      <div class="row">
+        <button class="btn" id="sure" type="button" disabled>自信ありで判定</button>
+        <button class="btn ghost" id="unsure" type="button" disabled>迷ったが判定</button>
+      </div>
+      <p class="muted">迷ったかどうかも記録します。迷いのある判断は、実務なら誰かに確認する判断です。</p>
+    </div>
+    <div id="q-verdict" hidden></div>
+    <button class="btn" id="next" type="button" hidden>次へ</button>
+  </section>
+
+  <section class="view" id="v-done" hidden>
+    <div class="today">
+      <h2>今日の判定が終わりました</h2>
+      <p id="done-summary"></p>
+      <div id="done-list" class="plist"></div>
+      <div class="row">
+        <button class="btn" id="again" type="button">もう10問</button>
+        <a class="btn ghost" href="#log" style="text-align:center;text-decoration:none">記録を見る</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="view" id="v-spec" hidden>
+    <h2>突合仕様書</h2>
+    <div class="doc">
+      <h3>前提</h3>
+      <ul>
+        <li>基準日は <b>2026-10-31</b>。正とするシステムは <b>A（人事給与）</b>。</li>
+        <li>Aの突合対象は、在籍区分が在籍・休職で、役員でなく、出向中でない社員。役員・出向中はBの対象外（差異にしない）。</li>
+        <li>Aの退職者は、Bにアカウントが残っていれば突合して比較する。</li>
+      </ul>
+      <h3>同一人物の判定</h3>
+      <ul>
+        <li>キーの順番は ①社員番号（6桁にそろえる） ②メールアドレス（大文字小文字は区別しない）。</li>
+        <li>氏名だけで同一人物と確定しない。</li>
+        <li>再雇用者はAに新旧2つの社員番号がある。Bのアカウントは現在の雇用に結合する。</li>
+      </ul>
+      <h3>比較のルール</h3>
+      <div class="tbl"><table>
+        <tr><th>氏名</th><td>空白・全角半角・異体字（髙↔高、﨑↔崎、齋↔斎、邉↔辺）の違いだけなら一致</td></tr>
+        <tr><th>所属</th><td>組織コードで比較。略称・半角カナ・旧名称でも同じ組織コードなら一致</td></tr>
+        <tr><th>雇用区分</th><td>ラベルの表記ゆれだけなら一致</td></tr>
+        <tr><th>入社日</th><td>利用開始日が入社日の0〜7日前（事前登録）なら一致</td></tr>
+        <tr><th>在籍／有効</th><td>在籍・休職 → 有効 1、退職 → 有効 0 なら一致</td></tr>
+        <tr><th>社員番号</th><td>先頭ゼロの有無だけなら一致。空欄・別の番号は差異</td></tr>
+      </table></div>
+      <h3>組織改編（2026-04-01）</h3>
+      <div class="tbl"><table>
+        <tr><th>31010100</th><td>営業第一部 → 法人営業部</td></tr>
+        <tr><th>31020100</th><td>営業第二部 → 個人営業部</td></tr>
+      </table></div>
+      <h3>Bでよく見る略称</h3>
+      <p class="muted">情シス＝情報システム部、品証部＝品質保証部、CS部＝カスタマーサポート部、マーケ部＝マーケティング部</p>
+    </div>
+  </section>
+
+  <section class="view" id="v-principles" hidden>
+    <h2>9つの原則</h2>
+    <p class="muted">解説の最後に出てくる番号です。右の数字は、その原則に関わる問題の正答率です。</p>
+    <div class="plist" id="plist"></div>
+  </section>
+
+  <section class="view" id="v-log" hidden>
+    <h2>判断の記録</h2>
+    <p class="muted">間違えた問題と、迷った問題が残ります。PCで作業するときに、判断台帳（learning/decision_ledger.csv）へ貼り付けてください。記録はこの端末のブラウザにだけ保存されます。</p>
+    <div id="loglist" class="plist"></div>
+    <div class="doc">
+      <h3>判断台帳に貼る形式</h3>
+      <textarea id="ledger" readonly aria-label="判断台帳用のテキスト"></textarea>
+      <div class="row">
+        <button class="btn" id="copy" type="button">コピーする</button>
+        <button class="btn ghost" id="reset" type="button">記録を消す</button>
+      </div>
+      <p class="toast" id="toast" role="status"></p>
+    </div>
+  </section>
+</div>
+
+<script>
+const DATA = /*__DRILL_DATA__*/null;
+const KIND = { match: "名寄せ", diff: "差異の判定", action: "次の一手", principle: "原則" };
+const KIND_Q = {
+  match: "Bのこのアカウントは、Aのどの社員に結合しますか。",
+  diff: "この組で、報告すべき差異はどれですか。（複数選択）",
+};
+const DUE_DAYS = [0, 1, 3, 7, 14, 30];
+const STORE_KEY = "hr-drill-v1";
+const byId = Object.fromEntries(DATA.cases.map(c => [c.id, c]));
+
+function load() {
+  try { const s = JSON.parse(localStorage.getItem(STORE_KEY) || "null"); if (s && s.v === 1) return s; } catch (e) {}
+  return { v: 1, boxes: {}, history: [], days: [], log: [] };
+}
+let store = load();
+function save() { try { localStorage.setItem(STORE_KEY, JSON.stringify(store)); } catch (e) {} }
+const today = () => new Date().toISOString().slice(0, 10);
+const addDays = (d, n) => { const t = new Date(d + "T00:00:00Z"); t.setUTCDate(t.getUTCDate() + n); return t.toISOString().slice(0, 10); };
+const esc = s => String(s).replace(/[&<>"]/g, ch => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[ch]));
+
+function streak() {
+  const days = new Set(store.days); let n = 0; let d = today();
+  if (!days.has(d)) d = addDays(d, -1);
+  while (days.has(d)) { n++; d = addDays(d, -1); }
+  return n;
+}
+function dueIds() {
+  const t = today();
+  return Object.entries(store.boxes).filter(([, b]) => b.due <= t && b.box < DUE_DAYS.length).map(([id]) => id).filter(id => byId[id]);
+}
+function pickSession(n) {
+  const rnd = a => a.map(x => [Math.random(), x]).sort((p, q) => p[0] - q[0]).map(p => p[1]);
+  const due = rnd(dueIds()).slice(0, Math.ceil(n / 2));
+  const seen = new Set(Object.keys(store.boxes));
+  const plan = n >= 10 ? { diff: 3, match: 3, action: 2, principle: 2 } : { diff: 1, match: 1, action: 1 };
+  const picked = [...due];
+  for (const [kind, k] of Object.entries(plan)) {
+    const fresh = rnd(DATA.cases.filter(c => c.kind === kind && !seen.has(c.id) && !picked.includes(c.id)));
+    const pool = fresh.length ? fresh : rnd(DATA.cases.filter(c => c.kind === kind && !picked.includes(c.id)));
+    for (const c of pool.slice(0, Math.max(0, k - picked.filter(id => byId[id].kind === kind).length))) picked.push(c.id);
+  }
+  while (picked.length < n) { const c = DATA.cases[Math.floor(Math.random() * DATA.cases.length)]; if (!picked.includes(c.id)) picked.push(c.id); }
+  return rnd(picked.slice(0, n));
+}
+
+/* ---------- 表示部品 ---------- */
+function slip(title, side, rec, hit) {
+  const rows = Object.entries(rec).map(([k, v]) => `<dt>${esc(k)}</dt><dd>${esc(v)}</dd>`).join("");
+  return `<div class="slip"><div class="slip-title"><span>${esc(title)}</span><span>${esc(side)}</span></div><dl>${rows}</dl></div>`;
+}
+const CMP_ROWS = [
+  ["社員番号", "社員番号", "社員番号", "emp_no"], ["氏名", "氏名", "氏名", "name"], ["所属", "組織", "部署", "org"],
+  ["雇用区分", "雇用区分", "雇用形態", "emp_type"], ["入社日", "入社年月日", "利用開始日", "hire_date"],
+  ["在籍／有効", "在籍区分", "有効", "status"], ["メール", "メール", "メール", ""],
+];
+function compare(a, b, hits) {
+  const tr = CMP_ROWS.map(([label, ka, kb, item]) =>
+    `<tr class="${hits && hits.includes(item) ? "hit" : ""}"><th scope="row">${label}</th><td>${esc(a ? a[ka] ?? "" : "—")}</td><td>${esc(b ? b[kb] ?? "" : "—")}</td></tr>`).join("");
+  return `<div class="cmp-wrap"><table class="cmp"><thead><tr><th>項目</th><th>A 人事給与</th><th>B 勤怠・ID</th></tr></thead><tbody>${tr}</tbody></table></div>`;
+}
+
+/* ---------- ドリル ---------- */
+let session = null;
+function startSession(n) {
+  session = { ids: pickSession(n), i: 0, results: [] };
+  location.hash = "#drill"; renderQuestion();
+}
+function renderQuestion() {
+  const c = byId[session.ids[session.i]];
+  session.sel = new Set(); session.answered = false;
+  document.getElementById("progress").innerHTML = session.ids.map((_, j) =>
+    `<span class="${j < session.i ? "done" : j === session.i ? "now" : ""}"></span>`).join("");
+  document.getElementById("q-kind").textContent = KIND[c.kind];
+  document.getElementById("q-count").textContent = `${session.i + 1} / ${session.ids.length}`;
+  document.getElementById("q-text").textContent = c.question || KIND_Q[c.kind];
+  const body = document.getElementById("q-body");
+  if (c.kind === "match") {
+    body.innerHTML = slip("判定するアカウント", "B 勤怠・ID", c.b) +
+      c.candidates.map(a => slip(`候補 ${a["社員番号"]}`, "A 人事給与", a)).join("");
+  } else if (c.kind === "diff" || (c.kind === "action" && c.a && c.b && !c.a2)) {
+    body.innerHTML = compare(c.a, c.b);
+  } else if (c.kind === "action") {
+    body.innerHTML = (c.b ? slip("アカウント", "B 勤怠・ID", c.b) : "") + (c.a2 ? slip("旧レコード", "A 人事給与", c.a2) : "") +
+      (c.a ? slip(c.a2 ? "新レコード" : "社員", "A 人事給与", c.a) : "");
+  } else body.innerHTML = "";
+  const opts = document.getElementById("q-opts");
+  opts.innerHTML = c.options.map(o => `<button type="button" class="opt ${c.multi ? "" : "single"}" data-key="${esc(o.key)}" aria-pressed="false"><span class="box"></span><span>${esc(o.label)}</span></button>`).join("");
+  opts.querySelectorAll(".opt").forEach(btn => btn.addEventListener("click", () => toggle(c, btn)));
+  document.getElementById("q-conf").hidden = false;
+  document.getElementById("q-verdict").hidden = true;
+  document.getElementById("next").hidden = true;
+  setSubmit(false);
+  window.scrollTo({ top: 0 });
+}
+function setSubmit(on) { document.getElementById("sure").disabled = !on; document.getElementById("unsure").disabled = !on; }
+function toggle(c, btn) {
+  if (session.answered) return;
+  const k = btn.dataset.key;
+  if (!c.multi) session.sel = new Set([k]);
+  else if (k === "none") session.sel = session.sel.has("none") ? new Set() : new Set(["none"]);
+  else { session.sel.delete("none"); session.sel.has(k) ? session.sel.delete(k) : session.sel.add(k); }
+  document.querySelectorAll("#q-opts .opt").forEach(b => b.setAttribute("aria-pressed", session.sel.has(b.dataset.key) ? "true" : "false"));
+  setSubmit(session.sel.size > 0);
+}
+function judge(confident) {
+  const c = byId[session.ids[session.i]];
+  session.answered = true;
+  const ans = new Set(c.answer);
+  const ok = ans.size === session.sel.size && [...ans].every(k => session.sel.has(k));
+  document.querySelectorAll("#q-opts .opt").forEach(b => {
+    b.disabled = true;
+    if (ans.has(b.dataset.key)) b.classList.add("correct");
+    else if (session.sel.has(b.dataset.key)) b.classList.add("wrong");
+  });
+  if (c.kind === "diff") document.getElementById("q-body").innerHTML = compare(c.a, c.b, c.answer);
+  const p = DATA.principles[c.principle];
+  const labels = c.options.filter(o => ans.has(o.key)).map(o => o.label).join("、");
+  const danger = !ok && confident ? `<p class="warn">自信ありで間違えた判断です。実務なら、確認せずに進めてしまう種類の誤りです。</p>` : "";
+  const v = document.getElementById("q-verdict");
+  v.innerHTML = `<div class="verdict"><div class="stamp pop" aria-hidden="true">${ok ? "確認<br>済" : "差戻"}</div>
+    <h3>${ok ? "正しい判定です" : "差し戻し"}</h3><p class="answer">正解：${esc(labels)}</p>${danger}
+    <p>${esc(c.explain)}</p><p class="pr"><b>${c.principle}</b> ${esc(p[0])}：${esc(p[1])}</p></div>`;
+  v.hidden = false;
+  document.getElementById("q-conf").hidden = true;
+  const nx = document.getElementById("next"); nx.hidden = false; nx.textContent = session.i + 1 < session.ids.length ? "次へ" : "結果を見る";
+  record(c, ok, confident);
+  session.results.push({ id: c.id, ok, confident });
+}
+function record(c, ok, confident) {
+  const t = today();
+  const b = store.boxes[c.id] || { box: 0, due: t };
+  b.box = ok ? Math.min(b.box + 1, DUE_DAYS.length) : 1;
+  b.due = addDays(t, ok ? (DUE_DAYS[b.box] ?? 60) : 1);
+  store.boxes[c.id] = b;
+  store.history.push({ id: c.id, ok, confident, kind: c.kind, pr: c.principle, d: t });
+  if (store.history.length > 2000) store.history = store.history.slice(-2000);
+  if (!store.days.includes(t)) store.days.push(t);
+  if (!ok || !confident) {
+    store.log = store.log.filter(x => x.id !== c.id);
+    store.log.unshift({ id: c.id, ok, confident, d: t });
+    store.log = store.log.slice(0, 200);
+  }
+  save();
+}
+function nextQ() {
+  if (session.i + 1 < session.ids.length) { session.i++; renderQuestion(); return; }
+  const n = session.results.length, k = session.results.filter(r => r.ok).length;
+  const risky = session.results.filter(r => !r.ok && r.confident).length;
+  document.getElementById("done-summary").textContent = `${n}問中 ${k}問が正しい判定でした。` + (risky ? `自信ありで間違えたものが ${risky}問あります。記録から見直してください。` : "");
+  document.getElementById("done-list").innerHTML = session.results.filter(r => !r.ok).map(r => {
+    const c = byId[r.id]; return `<div class="log-item"><span class="meta">${c.id} ・ ${KIND[c.kind]} ・ ${c.principle}</span>${esc(c.explain)}</div>`;
+  }).join("");
+  location.hash = "#done";
+}
+
+/* ---------- ホーム・原則・記録 ---------- */
+function renderHome() {
+  document.getElementById("s-streak").textContent = streak();
+  const last = store.history.slice(-50);
+  document.getElementById("s-acc").textContent = last.length ? Math.round(100 * last.filter(h => h.ok).length / last.length) + "%" : "—";
+  document.getElementById("s-due").textContent = dueIds().length;
+  document.getElementById("kinds").innerHTML = Object.entries(KIND).map(([k, label]) => {
+    const h = store.history.filter(x => x.kind === k); const pct = h.length ? Math.round(100 * h.filter(x => x.ok).length / h.length) : null;
+    return `<div class="kind-row"><span>${label}</span><span class="meter"><i style="width:${pct ?? 0}%"></i></span><span class="pct">${pct === null ? "未着手" : pct + "%"}</span></div>`;
+  }).join("");
+  const risky = store.history.filter(h => !h.ok && h.confident).length;
+  document.getElementById("calib").textContent = risky
+    ? `「自信あり」で間違えた判断：${risky}件。実務で一番危ないのはこの種類の判断です。記録タブで見直せます。`
+    : "「自信あり」で間違えた判断が、実務で一番危ない判断です。件数がここに出ます。";
+}
+function renderPrinciples() {
+  document.getElementById("plist").innerHTML = Object.entries(DATA.principles).map(([k, [t, d]]) => {
+    const h = store.history.filter(x => x.pr === k); const acc = h.length ? `${Math.round(100 * h.filter(x => x.ok).length / h.length)}%（${h.length}問）` : "未着手";
+    return `<div class="pitem"><span class="no">${k}</span><div><b>${esc(t)}</b><p>${esc(d)}</p><span class="acc">${acc}</span></div></div>`;
+  }).join("");
+}
+function ledgerText() {
+  return store.log.map((x, i) => {
+    const c = byId[x.id]; if (!c) return "";
+    const ans = c.options.filter(o => c.answer.includes(o.key)).map(o => o.label).join("／");
+    const q = (c.question || KIND_Q[c.kind]).replace(/[,\n]/g, " ");
+    const reason = c.explain.replace(/[,\n]/g, " ");
+    return [`M${String(i + 1).padStart(4, "0")}`, x.d, "mobile", `${c.id} ${KIND[c.kind]}：${q}`, "", ans.replace(/,/g, " "), reason, "", x.ok ? "低（迷った）" : "要復習"].join(",");
+  }).filter(Boolean).join("\n");
+}
+function renderLog() {
+  document.getElementById("loglist").innerHTML = store.log.length ? store.log.slice(0, 30).map(x => {
+    const c = byId[x.id]; if (!c) return "";
+    return `<div class="log-item"><span class="meta">${x.d} ・ ${c.id} ・ ${KIND[c.kind]} ・ ${x.ok ? "正解（迷った）" : x.confident ? "誤り（自信あり）" : "誤り"}</span>${esc(c.explain)}</div>`;
+  }).join("") : `<div class="log-item">まだ記録はありません。間違えた問題と迷った問題がここに残ります。</div>`;
+  document.getElementById("ledger").value = ledgerText();
+}
+
+/* ---------- 画面の切り替え ---------- */
+const VIEWS = { home: "v-home", drill: "v-drill", done: "v-done", spec: "v-spec", principles: "v-principles", log: "v-log" };
+function route() {
+  let name = (location.hash || "#home").slice(1);
+  if (!VIEWS[name] || ((name === "drill" || name === "done") && !session)) name = "home";
+  for (const [k, id] of Object.entries(VIEWS)) document.getElementById(id).hidden = k !== name;
+  document.querySelectorAll("nav.tabs a").forEach(a => a.setAttribute("aria-current", a.getAttribute("href") === "#" + name ? "page" : "false"));
+  if (name === "home") renderHome();
+  if (name === "principles") renderPrinciples();
+  if (name === "log") renderLog();
+}
+window.addEventListener("hashchange", route);
+document.getElementById("start10").addEventListener("click", () => startSession(10));
+document.getElementById("start3").addEventListener("click", () => startSession(3));
+document.getElementById("again").addEventListener("click", () => startSession(10));
+document.getElementById("sure").addEventListener("click", () => judge(true));
+document.getElementById("unsure").addEventListener("click", () => judge(false));
+document.getElementById("next").addEventListener("click", nextQ);
+document.getElementById("copy").addEventListener("click", () => {
+  const ta = document.getElementById("ledger"); const t = document.getElementById("toast");
+  const fallback = () => { ta.focus(); ta.select(); t.textContent = "選択しました。長押しでコピーしてください。"; };
+  try { navigator.clipboard.writeText(ta.value).then(() => { t.textContent = "コピーしました。"; }, fallback); } catch (e) { fallback(); }
+});
+let resetArmed = false;
+document.getElementById("reset").addEventListener("click", e => {
+  const t = document.getElementById("toast");
+  if (!resetArmed) { resetArmed = true; e.target.textContent = "もう一度押すと消去"; t.textContent = "記録と復習の予定がすべて消えます。"; return; }
+  store = { v: 1, boxes: {}, history: [], days: [], log: [] }; save(); resetArmed = false;
+  e.target.textContent = "記録を消す"; t.textContent = "記録を消しました。"; renderLog();
+});
+route();
+</script>
