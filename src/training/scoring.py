@@ -3,6 +3,7 @@
 提出物は2ファイル:
 - matches.csv : a_emp_id, b_user_id           （同一人物と判定した組）
 - diffs.csv   : a_emp_id, b_user_id, item[, cause]（報告すべき差異。1行＝1差異）
+練習用ブック（.xlsx）の場合は、matches シートと diffs シートを読む。
 """
 from __future__ import annotations
 
@@ -41,7 +42,11 @@ _TYPE_LABEL = {
 }
 
 
-def _read(path: Path) -> list[dict]:
+def _read(path: Path, sheet: str | None = None) -> list[dict]:
+    if path.suffix.lower() == ".xlsx":
+        from src.training.workbook import read_sheet
+
+        return read_sheet(path, sheet or path.stem)
     with path.open(encoding="utf-8-sig", newline="") as f:
         return [{k.strip(): (v or "").strip() for k, v in row.items() if k} for row in csv.DictReader(f)]
 
@@ -93,8 +98,8 @@ def score(matches_path: Path, diffs_path: Path, key_dir: Path) -> ScoreResult:
     exp_diffs = {_diff_key(d): d for d in _read(key_dir / "expected_diffs.csv")}
     answer_key = _read(key_dir / "answer_key.csv")
 
-    sub_matches = {(m.get("a_emp_id", ""), m.get("b_user_id", "")) for m in _read(matches_path)}
-    sub_diff_rows = _read(diffs_path)
+    sub_matches = {(m.get("a_emp_id", ""), m.get("b_user_id", "")) for m in _read(matches_path, "matches")}
+    sub_diff_rows = _read(diffs_path, "diffs")
     invalid = sorted({r.get("item", "") for r in sub_diff_rows if r.get("item", "") not in DIFF_ITEMS})
     sub_diffs = {_diff_key(r): r for r in sub_diff_rows if r.get("item", "") in DIFF_ITEMS}
 

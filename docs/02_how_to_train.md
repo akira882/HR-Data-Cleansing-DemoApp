@@ -52,6 +52,8 @@ python tools/score_recon.py --log
  判定: ❌ 不合格
 ```
 
+> 📱 スマホでの練習と、Excel / Googleスプレッドシートでの練習は [第3章](03_mobile_training.md) を参照してください（`--xlsx` で練習用ブックを作れます）。
+
 生成されるファイル：
 
 | 場所 | 中身 | 見てよいか |
